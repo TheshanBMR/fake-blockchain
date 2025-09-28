@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FakeChain - Distributed Blockchain (GitHub Pages)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .pulse-ring {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.8); opacity: 1; }
+            70% { transform: scale(1.2); opacity: 0.7; }
+            100% { transform: scale(0.8); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-dark-200 text-gray-200 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-dark-300 border-b border-gray-700 fixed top-0 left-0 right-0 z-50">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fab fa-bitcoin text-primary-500 text-2xl"></i>
+                <span class="text-xl font-bold">FakeChain</span>
+            </div>
+            <div class="flex space-x-6">
+                <a href="#dashboard" class="text-primary-500 font-medium">Dashboard</a>
+                <a href="#blocks" class="hover:text-primary-500 transition">Blocks</a>
+                <a href="#transactions" class="hover:text-primary-500 transition">Transactions</a>
+                <a href="#admin" class="hover:text-primary-500 transition">Admin</a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="bg-dark-100 px-3 py-1 rounded-full">
+                    <span class="text-sm">Network: FakeNet</span>
+                </div>
+                <button id="syncAllDevices" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg font-medium transition">
+                    <i class="fas fa-sync-alt mr-2"></i>Sync Network
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-8 mt-16">
+        <!-- Network Status -->
+        <div class="mb-6 p-4 bg-dark-100 rounded-lg border border-gray-700">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <div id="networkStatus" class="w-3 h-3 bg-green-500 rounded-full pulse-ring"></div>
+                        <span class="text-sm" id="networkStatusText">Connected to Network</span>
+                    </div>
+                    <div class="text-sm text-gray-400">
+                        Devices: <span id="deviceCount">1</span> | Block Height: <span id="blockHeight">0</span>
+                    </div>
+                </div>
+                <div class="text-sm text-gray-400">
+                    Chain ID: <span id="chainId">fkc_001</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard -->
+        <section id="dashboard" class="mb-12">
+            <h1 class="text-3xl font-bold mb-6">FakeChain Dashboard</h1>
+            
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-dark-100 p-6 rounded-xl border border-gray-700">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold">Current Block</h3>
+                        <i class="fas fa-cube text-primary-500 text-xl"></i>
+                    </div>
+                    <p class="text-3xl font-bold" id="currentBlock">#0</p>
+                    <p class="text-gray-400 mt-2">Blocks in chain</p>
+                </div>
+                
+                <div class="bg-dark-100 p-6 rounded-xl border border-gray-700">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold">Total Transactions</h3>
+                        <i class="fas fa-exchange-alt text-primary-500 text-xl"></i>
+                    </div>
+                    <p class="text-3xl font-bold" id="totalTransactions">0</p>
+                    <p class="text-gray-400 mt-2">All time transactions</p>
+                </div>
+                
+                <div class="bg-dark-100 p-6 rounded-xl border border-gray-700">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold">Network Devices</h3>
+                        <i class="fas fa-users text-primary-500 text-xl"></i>
+                    </div>
+                    <p class="text-3xl font-bold" id="networkDevices">1</p>
+                    <p class="text-gray-400 mt-2">Active devices</p>
+                </div>
+                
+                <div class="bg-dark-100 p-6 rounded-xl border border-gray-700">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold">Your Balance</h3>
+                        <i class="fas fa-wallet text-primary-500 text-xl"></i>
+                    </div>
+                    <p class="text-3xl font-bold" id="walletBalance">0.00</p>
+                    <p class="text-gray-400 mt-2">FKC coins</p>
+                </div>
+            </div>
+            
+            <div class="bg-dark-100 p-6 rounded-xl border border-gray-700">
+                <h2 class="text-xl font-bold mb-4">Wallet Information</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <div class="mb-4">
+                            <label class="block text-gray-400 mb-2">Your Address</label>
+                            <div class="flex items-center">
+                                <input type="text" id="walletAddress" readonly class="bg-dark-200 border border-gray-700 rounded-lg px-4 py-2 w-full text-sm font-mono">
+                                <button id="copyAddress" class="ml-2 bg-dark-300 hover:bg-dark-200 p-2 rounded-lg transition">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block text-gray-400 mb-2">Balance</label>
+                            <div class="flex items-center">
+                                <span id="balanceAmount" class="text-2xl font-bold">0.00</span>
+                                <span class="ml-2 text-gray-400">FKC</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-gray-400 mb-2">Wallet Created</label>
+                            <div class="flex items-center">
+                                <span id="walletCreated" class="text-sm text-gray-400">-</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-gray-400 mb-2">Device ID</label>
+                            <div class="flex items-center">
+                                <span id="deviceId" class="text-sm font-mono text-gray-400">-</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">Send Transaction</h3>
+                        <div class="mb-4">
+                            <label class="block text-gray-400 mb-2">Recipient Address</label>
+                            <input type="text" id="recipientAddress" class="bg-dark-200 border border-gray-700 rounded-lg px-4 py-2 w-full" placeholder="0x...">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-gray-400 mb-2">Amount (FKC)</label>
+                            <input type="number" id="sendAmount" class="bg-dark-200 border border-gray-700 rounded-lg px-4 py-2 w-full" placeholder="0.00" min="0.01" step="0.01">
+                        </div>
+                        <button id="sendTransaction" class="bg-primary-500 hover:bg-primary-600 px-4 py-2 rounded-lg w-full font-medium transition">
+                            Send FakeCoins
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Blocks Section -->
+        <section id="blocks" class="mb-12">
+            <h2 class="text-2xl font-bold mb-6">Latest Blocks</h2>
+            <div class="bg-dark-100 rounded-xl border border-gray-700 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-dark-300 border-b border-gray-700">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Block</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Timestamp</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Transactions</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Hash</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Miner</th>
+                            </tr>
+                        </thead>
+                        <tbody id="blocksTable" class="divide-y divide-gray-700">
+                            <tr>
+                                <td colspan="5" class="px-6 py-4 text-center text-gray-400">Loading blocks...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Transactions Section -->
+        <section id="transactions" class="mb-12">
+            <h2 class="text-2xl font-bold mb-6">Recent Transactions</h2>
+            <div class="bg-dark-100 rounded-xl border border-gray-700 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-dark-300 border-b border-gray-700">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Hash</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">From</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">To</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Amount</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Timestamp</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactionsTable" class="divide-y divide-gray-700">
+                            <tr>
+                                <td colspan="6" class="px-6 py-4 text-center text-gray-400">Loading transactions...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Admin Section -->
+        <section id="admin" class="mb-12">
+            <h2 class="text-2xl font-bold mb-6">Admin Functions</h2>
+            <div class="bg-dark-100 p-6 rounded-xl border border-gray-700">
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold mb-4">Add Balance to User</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <div class="mb-4">
+                                <label class="block text-gray-400 mb-2">User Address</label>
+                                <input type="text" id="adminUserAddress" class="bg-dark-200 border border-gray-700 rounded-lg px-4 py-2 w-full" placeholder="0x...">
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-400 mb-2">Amount (FKC)</label>
+                                <input type="number" id="adminAmount" class="bg-dark-200 border border-gray-700 rounded-lg px-4 py-2 w-full" placeholder="0.00" min="0.01" step="0.01">
+                            </div>
+                        </div>
+                        <div>
+                            <div class="mb-4">
+                                <label class="block text-gray-400 mb-2">Admin Password</label>
+                                <input type="password" id="adminPassword" class="bg-dark-200 border border-gray-700 rounded-lg px-4 py-2 w-full" placeholder="Enter admin password">
+                            </div>
+                            <button id="addBalance" class="bg-primary-500 hover:bg-primary-600 px-4 py-2 rounded-lg w-full font-medium transition mt-6">
+                                Add Balance
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold mb-4">Mine New Block</h3>
+                    <p class="text-gray-400 mb-4">Manually mine a new block to include pending transactions.</p>
+                    <button id="mineBlock" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg font-medium transition">
+                        Mine Block
+                    </button>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Network Management</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <button id="exportData" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg font-medium transition">
+                            Export Blockchain Data
+                        </button>
+                        <button id="importData" class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg font-medium transition">
+                            Import Blockchain Data
+                        </button>
+                        <button id="resetBlockchain" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg font-medium transition">
+                            Reset Blockchain
+                        </button>
+                        <button id="shareData" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg font-medium transition">
+                            Share with Other Devices
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-4 right-4 bg-dark-300 border border-gray-700 rounded-lg p-4 shadow-lg hidden z-50 max-w-sm">
+        <div class="flex items-center">
+            <i id="toastIcon" class="fas fa-info-circle text-primary-500 mr-3"></i>
+            <span id="toastMessage">This is a toast message</span>
+        </div>
+    </div>
+
+    <script>
+    // Enhanced Distributed Blockchain for GitHub Pages
+    class DistributedBlockchain {
+        constructor() {
+            this.deviceId = this.generateDeviceId();
+            this.chainId = 'fkc_001';
+            this.adminAuth = new SecureAdminAuth();
+            this.loadBlockchain();
+            this.setupCrossDeviceSync();
+        }
+
+        generateDeviceId() {
+            let deviceId = localStorage.getItem('fakechain_device_id');
+            if (!deviceId) {
+                deviceId = 'device_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('fakechain_device_id', deviceId);
+            }
+            return deviceId;
+        }
+
+        generateHash(input) {
+            let hash = 0;
+            for (let i = 0; i < input.length; i++) {
+                const char = input.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return '0x' + Math.abs(hash).toString(16).padStart(64, '0');
+        }
+
+        generateWalletAddress() {
+            const chars = '0123456789abcdef';
+            let address = '0x';
+            for (let i = 0; i < 40; i++) {
+                address += chars[Math.floor(Math.random() * chars.length)];
+            }
+            return address;
+        }
+
+        loadBlockchain() {
+            // Load from localStorage or initialize
+            const saved = localStorage.getItem('fakechain_blockchain');
+            if (saved) {
+                const data = JSON.parse(saved);
+                this.blocks = data.blocks || [];
+                this.pendingTransactions = data.pendingTransactions || [];
+                this.wallets = new Map(data.wallets || []);
+                this.currentBlockNumber = data.currentBlockNumber || 0;
+                this.totalTransactions = data.totalTransactions || 0;
+                this.networkDevices = data.networkDevices || [this.deviceId];
+            } else {
+                this.initializeGenesisBlock();
+            }
+
+            // Load or create user wallet
+            this.loadUserWallet();
+        }
+
+        initializeGenesisBlock() {
+            this.blocks = [{
+                number: 0,
+                timestamp: new Date().toISOString(),
+                transactions: [],
+                hash: this.generateHash('genesis'),
+                previousHash: '0',
+                miner: '0x0000000000000000000000000000000000000000'
+            }];
+            this.pendingTransactions = [];
+            this.wallets = new Map();
+            this.currentBlockNumber = 0;
+            this.totalTransactions = 0;
+            this.networkDevices = [this.deviceId];
+            this.saveBlockchain();
+        }
+
+        loadUserWallet() {
+            let walletData = localStorage.getItem('fakechain_user_wallet');
+            if (walletData) {
+                const wallet = JSON.parse(walletData);
+                this.userWallet = wallet.address;
+                this.walletCreated = wallet.created;
+                
+                // Ensure wallet exists in blockchain
+                if (!this.wallets.has(this.userWallet)) {
+                    this.wallets.set(this.userWallet, {
+                        address: this.userWallet,
+                        balance: 100, // Starting balance
+                        created: this.walletCreated
+                    });
+                    this.saveBlockchain();
+                }
+            } else {
+                this.createUserWallet();
+            }
+        }
+
+        createUserWallet() {
+            const address = this.generateWalletAddress();
+            const created = new Date().toISOString();
+            
+            this.userWallet = address;
+            this.walletCreated = created;
+            
+            this.wallets.set(address, {
+                address: address,
+                balance: 100, // Starting balance
+                created: created
+            });
+            
+            localStorage.setItem('fakechain_user_wallet', JSON.stringify({
+                address: address,
+                created: created
+            }));
+            
+            this.saveBlockchain();
+            return address;
+        }
+
+        saveBlockchain() {
+            const data = {
+                blocks: this.blocks,
+                pendingTransactions: this.pendingTransactions,
+                wallets: Array.from(this.wallets.entries()),
+                currentBlockNumber: this.currentBlockNumber,
+                totalTransactions: this.totalTransactions,
+                networkDevices: this.networkDevices,
+                lastUpdated: new Date().toISOString(),
+                chainId: this.chainId
+            };
+            localStorage.setItem('fakechain_blockchain', JSON.stringify(data));
+            
+            // Also save to a shared key for cross-device simulation
+            this.updateSharedNetwork();
+        }
+
+        updateSharedNetwork() {
+            // Simulate network sharing by storing in a shared localStorage key
+            const networkData = {
+                chainId: this.chainId,
+                blockHeight: this.currentBlockNumber,
+                totalDevices: this.networkDevices.length,
+                lastBlockTime: this.blocks[this.blocks.length - 1]?.timestamp,
+                totalTransactions: this.totalTransactions
+            };
+            localStorage.setItem('fakechain_network_stats', JSON.stringify(networkData));
+        }
+
+        setupCrossDeviceSync() {
+            // Simulate cross-device communication using localStorage events
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'fakechain_network_stats' && e.newValue) {
+                    this.handleNetworkUpdate(JSON.parse(e.newValue));
+                }
+            });
+
+            // Periodically update network stats
+            setInterval(() => {
+                this.updateSharedNetwork();
+            }, 10000);
+        }
+
+        handleNetworkUpdate(networkData) {
+            if (networkData.chainId === this.chainId) {
+                // Same blockchain network
+                if (networkData.blockHeight > this.currentBlockNumber) {
+                    // Another device has more blocks, trigger sync
+                    this.syncWithNetwork();
+                }
+            }
+        }
+
+        syncWithNetwork() {
+            // In a real scenario, this would sync with other devices
+            // For GitHub Pages, we'll simulate this
+            const networkStats = localStorage.getItem('fakechain_network_stats');
+            if (networkStats) {
+                const data = JSON.parse(networkStats);
+                this.networkDevices = Array.from(new Set([...this.networkDevices, this.deviceId]));
+                this.saveBlockchain();
+                return { success: true, message: "Network synced successfully" };
+            }
+            return { success: false, message: "No network data found" };
+        }
+
+        addBalance(userAddress, amount, password) {
+            if (!this.adminAuth.verifyPassword(password)) {
+                return { success: false, message: "Invalid admin password" };
+            }
+            
+            if (!this.wallets.has(userAddress)) {
+                this.wallets.set(userAddress, {
+                    address: userAddress,
+                    balance: 0,
+                    created: new Date().toISOString()
+                });
+            }
+            
+            const wallet = this.wallets.get(userAddress);
+            wallet.balance += parseFloat(amount);
+            
+            const transaction = {
+                hash: this.generateHash(`admin-${Date.now()}`),
+                from: '0x0000000000000000000000000000000000000000',
+                to: userAddress,
+                amount: parseFloat(amount),
+                timestamp: new Date().toISOString(),
+                status: 'confirmed',
+                type: 'admin'
+            };
+            
+            this.pendingTransactions.push(transaction);
+            this.totalTransactions++;
+            this.saveBlockchain();
+            
+            return { success: true, message: `Added ${amount} FKC to ${userAddress}` };
+        }
+
+        sendTransaction(from, to, amount) {
+            if (!this.wallets.has(from)) {
+                return { success: false, message: "Sender wallet not found" };
+            }
+            
+            const senderWallet = this.wallets.get(from);
+            
+            if (senderWallet.balance < parseFloat(amount)) {
+                return { success: false, message: "Insufficient balance" };
+            }
+            
+            if (!this.wallets.has(to)) {
+                this.wallets.set(to, {
+                    address: to,
+                    balance: 0,
+                    created: new Date().toISOString()
+                });
+            }
+            
+            const transaction = {
+                hash: this.generateHash(`tx-${Date.now()}-${from}-${to}`),
+                from: from,
+                to: to,
+                amount: parseFloat(amount),
+                timestamp: new Date().toISOString(),
+                status: 'pending',
+                type: 'transfer'
+            };
+            
+            this.pendingTransactions.push(transaction);
+            this.totalTransactions++;
+            this.saveBlockchain();
+            
+            return { success: true, message: "Transaction added to pending pool", transaction };
+        }
+
+        mineBlock() {
+            if (this.pendingTransactions.length === 0) {
+                return { success: false, message: "No pending transactions to mine" };
+            }
+            
+            const blockNumber = this.blocks.length;
+            const previousHash = this.blocks[this.blocks.length - 1].hash;
+            
+            // Process transactions
+            for (const tx of this.pendingTransactions) {
+                if (tx.status === 'pending' && tx.type === 'transfer') {
+                    const senderWallet = this.wallets.get(tx.from);
+                    const receiverWallet = this.wallets.get(tx.to);
+                    
+                    if (senderWallet && receiverWallet) {
+                        senderWallet.balance -= tx.amount;
+                        receiverWallet.balance += tx.amount;
+                        tx.status = 'confirmed';
+                    }
+                }
+            }
+            
+            const newBlock = {
+                number: blockNumber,
+                timestamp: new Date().toISOString(),
+                transactions: [...this.pendingTransactions],
+                hash: this.generateHash(`block-${blockNumber}-${Date.now()}-${previousHash}`),
+                previousHash: previousHash,
+                miner: this.userWallet
+            };
+            
+            this.blocks.push(newBlock);
+            this.pendingTransactions = [];
+            this.currentBlockNumber = blockNumber;
+            this.saveBlockchain();
+            
+            return { success: true, message: `Block #${blockNumber} mined successfully`, block: newBlock };
+        }
+
+        getBlocks() {
+            return this.blocks.slice().reverse();
+        }
+
+        getTransactions() {
+            const allTransactions = [];
+            
+            for (const block of this.blocks) {
+                allTransactions.push(...block.transactions);
+            }
+            
+            allTransactions.push(...this.pendingTransactions);
+            
+            return allTransactions.slice().reverse();
+        }
+
+        getWalletBalance(address) {
+            if (this.wallets.has(address)) {
+                return this.wallets.get(address).balance;
+            }
+            return 0;
+        }
+
+        exportBlockchainData() {
+            const data = {
+                blocks: this.blocks,
+                wallets: Array.from(this.wallets.entries()),
+                chainId: this.chainId,
+                exportDate: new Date().toISOString()
+            };
+            return JSON.stringify(data, null, 2);
+        }
+
+        importBlockchainData(jsonData) {
+            try {
+                const data = JSON.parse(jsonData);
+                if (data.chainId === this.chainId) {
+                    this.blocks = data.blocks || [];
+                    this.wallets = new Map(data.wallets || []);
+                    this.currentBlockNumber = this.blocks.length - 1;
+                    this.saveBlockchain();
+                    return { success: true, message: "Blockchain data imported successfully" };
+                } else {
+                    return { success: false, message: "Invalid chain ID" };
+                }
+            } catch (error) {
+                return { success: false, message: "Invalid JSON data" };
+            }
+        }
+
+        resetBlockchain() {
+            this.initializeGenesisBlock();
+            return { success: true, message: "Blockchain reset successfully" };
+        }
+    }
+
+    // Admin Authentication (same as before)
+    class SecureAdminAuth {
+        constructor() {
+            this.passwordHash = "00000000000000000000000060203d1e";
+        }
+        
+        complexHash(input) {
+            let hash = 0;
+            const prime1 = 137;
+            const prime2 = 257;
+            const prime3 = 65537;
+            
+            for (let i = 0; i < input.length; i++) {
+                const char = input.charCodeAt(i);
+                hash = ((hash << 7) - hash + char * prime1) & 0xFFFFFFFF;
+                hash = (hash ^ (hash >> 13)) * prime2;
+                hash = (hash ^ (hash >> 17)) * prime3;
+                hash = hash ^ (hash >> 19);
+            }
+            
+            return Math.abs(hash).toString(16).padStart(32, '0');
+        }
+        
+        transformInput(input) {
+            let transformed = "";
+            
+            for (let i = 0; i < input.length; i++) {
+                let charCode = input.charCodeAt(i);
+                charCode = (charCode * 7919 + 65537) % 256;
+                transformed += String.fromCharCode(charCode);
+            }
+            
+            let xored = "";
+            for (let i = 0; i < transformed.length; i++) {
+                const keyChar = (i * 123456789) % 256;
+                xored += String.fromCharCode(transformed.charCodeAt(i) ^ keyChar);
+            }
+            
+            let rotated = "";
+            for (let i = 0; i < xored.length; i++) {
+                let byte = xored.charCodeAt(i);
+                byte = ((byte << 3) | (byte >> 5)) & 0xFF;
+                rotated += String.fromCharCode(byte);
+            }
+            
+            return rotated;
+        }
+        
+        verifyPassword(input) {
+            if (!input || input.length < 8) return false;
+            
+            const transformed = this.transformInput(input);
+            const inputHash = this.complexHash(transformed + input.length.toString());
+            
+            return this.secureCompare(inputHash, this.passwordHash);
+        }
+        
+        secureCompare(a, b) {
+            if (a.length !== b.length) return false;
+            
+            let result = 0;
+            for (let i = 0; i < a.length; i++) {
+                result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+            }
+            return result === 0;
+        }
+    }
+
+    // Initialize the blockchain
+    const blockchain = new DistributedBlockchain();
+
+    // UI Management
+    class BlockchainUI {
+        constructor() {
+            this.initializeElements();
+            this.attachEventListeners();
+            this.updateUI();
+        }
+
+        initializeElements() {
+            this.elements = {
+                walletAddress: document.getElementById('walletAddress'),
+                walletBalance: document.getElementById('balanceAmount'),
+                walletCreated: document.getElementById('walletCreated'),
+                currentBlock: document.getElementById('currentBlock'),
+                totalTransactions: document.getElementById('totalTransactions'),
+                networkDevices: document.getElementById('networkDevices'),
+                deviceId: document.getElementById('deviceId'),
+                blockHeight: document.getElementById('blockHeight'),
+                chainId: document.getElementById('chainId'),
+                deviceCount: document.getElementById('deviceCount'),
+                blocksTable: document.getElementById('blocksTable'),
+                transactionsTable: document.getElementById('transactionsTable'),
+                toast: document.getElementById('toast'),
+                toastMessage: document.getElementById('toastMessage'),
+                toastIcon: document.getElementById('toastIcon')
+            };
+        }
+
+        attachEventListeners() {
+            document.getElementById('copyAddress').addEventListener('click', () => this.copyAddress());
+            document.getElementById('sendTransaction').addEventListener('click', () => this.sendTransaction());
+            document.getElementById('addBalance').addEventListener('click', () => this.addBalance());
+            document.getElementById('mineBlock').addEventListener('click', () => this.mineBlock());
+            document.getElementById('syncAllDevices').addEventListener('click', () => this.syncNetwork());
+            document.getElementById('exportData').addEventListener('click', () => this.exportData());
+            document.getElementById('importData').addEventListener('click', () => this.importData());
+            document.getElementById('resetBlockchain').addEventListener('click', () => this.resetBlockchain());
+            document.getElementById('shareData').addEventListener('click', () => this.shareData());
+        }
+
+        updateUI() {
+            // Update wallet info
+            this.elements.walletAddress.value = blockchain.userWallet;
+            this.elements.walletBalance.textContent = blockchain.getWalletBalance(blockchain.userWallet).toFixed(2);
+            this.elements.walletCreated.textContent = new Date(blockchain.walletCreated).toLocaleString();
+            this.elements.deviceId.textContent = blockchain.deviceId;
+
+            // Update blockchain info
+            this.elements.currentBlock.textContent = `#${blockchain.currentBlockNumber}`;
+            this.elements.totalTransactions.textContent = blockchain.totalTransactions;
+            this.elements.networkDevices.textContent = blockchain.networkDevices.length;
+            this.elements.blockHeight.textContent = blockchain.currentBlockNumber;
+            this.elements.chainId.textContent = blockchain.chainId;
+            this.elements.deviceCount.textContent = blockchain.networkDevices.length;
+
+            // Update tables
+            this.renderBlocks();
+            this.renderTransactions();
+        }
+
+        renderBlocks() {
+            const blocks = blockchain.getBlocks();
+            this.elements.blocksTable.innerHTML = '';
+            
+            if (blocks.length === 0) {
+                this.elements.blocksTable.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-gray-400">No blocks found</td></tr>';
+                return;
+            }
+            
+            blocks.forEach(block => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-dark-300 transition';
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="font-mono text-primary-500">#${block.number}</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        ${new Date(block.timestamp).toLocaleString()}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        ${block.transactions.length}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="font-mono text-sm">${block.hash.substring(0, 16)}...</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="font-mono text-sm">${block.miner.substring(0, 10)}...</span>
+                    </td>
+                `;
+                this.elements.blocksTable.appendChild(row);
+            });
+        }
+
+        renderTransactions() {
+            const transactions = blockchain.getTransactions();
+            this.elements.transactionsTable.innerHTML = '';
+            
+            if (transactions.length === 0) {
+                this.elements.transactionsTable.innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-gray-400">No transactions found</td></tr>';
+                return;
+            }
+            
+            transactions.forEach(tx => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-dark-300 transition cursor-pointer';
+                
+                const statusClass = tx.status === 'confirmed' ? 'bg-green-800 text-green-200' : 'bg-yellow-800 text-yellow-200';
+                const isUserTx = tx.from === blockchain.userWallet || tx.to === blockchain.userWallet;
+                
+                if (isUserTx) {
+                    row.classList.add('bg-dark-300');
+                }
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="font-mono text-sm">${tx.hash.substring(0, 16)}...</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="font-mono text-sm ${tx.from === blockchain.userWallet ? 'text-primary-500' : ''}">${tx.from.substring(0, 10)}...</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="font-mono text-sm ${tx.to === blockchain.userWallet ? 'text-primary-500' : ''}">${tx.to.substring(0, 10)}...</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        ${tx.amount} FKC
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 py-1 rounded-full text-xs ${statusClass}">${tx.status}</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        ${new Date(tx.timestamp).toLocaleString()}
+                    </td>
+                `;
+                this.elements.transactionsTable.appendChild(row);
+            });
+        }
+
+        copyAddress() {
+            navigator.clipboard.writeText(blockchain.userWallet);
+            this.showToast("Address copied to clipboard", "success");
+        }
+
+        async sendTransaction() {
+            const recipient = document.getElementById('recipientAddress').value;
+            const amount = document.getElementById('sendAmount').value;
+            
+            if (!recipient || !amount) {
+                this.showToast("Please fill in all fields", "error");
+                return;
+            }
+            
+            if (parseFloat(amount) <= 0) {
+                this.showToast("Amount must be greater than 0", "error");
+                return;
+            }
+            
+            const result = blockchain.sendTransaction(blockchain.userWallet, recipient, amount);
+            
+            if (result.success) {
+                document.getElementById('recipientAddress').value = '';
+                document.getElementById('sendAmount').value = '';
+                this.updateUI();
+                this.showToast("Transaction sent successfully", "success");
+            } else {
+                this.showToast(result.message, "error");
+            }
+        }
+
+        async addBalance() {
+            const userAddress = document.getElementById('adminUserAddress').value;
+            const amount = document.getElementById('adminAmount').value;
+            const password = document.getElementById('adminPassword').value;
+            
+            if (!userAddress || !amount || !password) {
+                this.showToast("Please fill in all fields", "error");
+                return;
+            }
+            
+            const result = blockchain.addBalance(userAddress, amount, password);
+            
+            if (result.success) {
+                document.getElementById('adminUserAddress').value = '';
+                document.getElementById('adminAmount').value = '';
+                document.getElementById('adminPassword').value = '';
+                this.updateUI();
+                this.showToast(result.message, "success");
+            } else {
+                this.showToast(result.message, "error");
+            }
+        }
+
+        async mineBlock() {
+            const result = blockchain.mineBlock();
+            
+            if (result.success) {
+                this.updateUI();
+                this.showToast(result.message, "success");
+            } else {
+                this.showToast(result.message, "info");
+            }
+        }
+
+        async syncNetwork() {
+            this.showToast("Syncing with network...", "info");
+            const result = blockchain.syncWithNetwork();
+            
+            if (result.success) {
+                this.updateUI();
+                this.showToast("Network synced successfully", "success");
+            } else {
+                this.showToast("No other devices found", "info");
+            }
+        }
+
+        exportData() {
+            const data = blockchain.exportBlockchainData();
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `fakechain-export-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            this.showToast("Blockchain data exported", "success");
+        }
+
+        importData() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const result = blockchain.importBlockchainData(event.target.result);
+                    if (result.success) {
+                        this.updateUI();
+                        this.showToast(result.message, "success");
+                    } else {
+                        this.showToast(result.message, "error");
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
+        resetBlockchain() {
+            if (confirm("Are you sure you want to reset the blockchain? All data will be lost!")) {
+                const result = blockchain.resetBlockchain();
+                this.updateUI();
+                this.showToast(result.message, "success");
+            }
+        }
+
+        shareData() {
+            // Simulate sharing by showing export instructions
+            this.showToast("Export data and share the JSON file with other devices", "info");
+        }
+
+        showToast(message, type = "info") {
+            this.elements.toastMessage.textContent = message;
+            
+            if (type === "success") {
+                this.elements.toastIcon.className = "fas fa-check-circle text-green-500 mr-3";
+            } else if (type === "error") {
+                this.elements.toastIcon.className = "fas fa-exclamation-circle text-red-500 mr-3";
+            } else {
+                this.elements.toastIcon.className = "fas fa-info-circle text-primary-500 mr-3";
+            }
+            
+            this.elements.toast.classList.remove('hidden');
+            
+            setTimeout(() => {
+                this.elements.toast.classList.add('hidden');
+            }, 5000);
+        }
+    }
+
+    // Initialize the UI when page loads
+    document.addEventListener('DOMContentLoaded', () => {
+        new BlockchainUI();
+        
+        // Auto-sync every 30 seconds
+        setInterval(() => {
+            blockchain.syncWithNetwork();
+            new BlockchainUI().updateUI();
+        }, 30000);
+    });
+    </script>
+</body>
+</html>
