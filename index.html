@@ -16,6 +16,26 @@
             100% { transform: scale(0.8); opacity: 1; }
         }
     </style>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            100: '#1e293b',
+                            200: '#0f172a',
+                            300: '#0a0f1c',
+                        },
+                        primary: {
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
 </head>
 <body class="bg-dark-200 text-gray-200 min-h-screen">
     <!-- Navigation -->
