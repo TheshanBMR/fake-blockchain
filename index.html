@@ -575,27 +575,29 @@
 
     // Initialize the UI
     function initializeUI() {
-        walletAddressElement.value = blockchain.userWallet;
-        walletCreatedElement.textContent = new Date(blockchain.getWalletCreationTime()).toLocaleString();
-        
-        updateWalletBalance();
-        updateBlockCount();
-        updateTransactionCount();
-        
-        renderBlocks();
-        renderTransactions();
-        
-        // For demo - add initial balance without revealing password
-        setTimeout(() => {
-            const demoAddress = blockchain.userWallet;
-            if (!localStorage.getItem('demo_balance_added')) {
-                blockchain.wallets.get(demoAddress).balance = 100;
-                localStorage.setItem('demo_balance_added', 'true');
+            // Set wallet address and creation time
+            walletAddressElement.value = blockchain.userWallet;
+            walletCreatedElement.textContent = new Date(blockchain.getWalletCreationTime()).toLocaleString();
+            
+            // Update balances and counts
+            updateWalletBalance();
+            updateBlockCount();
+            updateTransactionCount();
+            
+            // Render blocks and transactions
+            renderBlocks();
+            renderTransactions();
+            
+            // Add some initial transactions for demo
+            setTimeout(() => {
+                // For demo purposes, we'll use the admin function directly
+                // In real usage, the admin would enter the password
+                blockchain.addBalance(blockchain.userWallet, 100, ";vqOSKOeiSYt1T,;FGmQjsCn=");
                 updateWalletBalance();
-                showToast("Welcome! Demo balance loaded", "success");
-            }
-        }, 1000);
-    }
+                renderTransactions();
+                showToast("Welcome! 100 FKC added to your wallet for demo purposes", "success");
+            }, 1000);
+        }
 
     // Update wallet balance display
     function updateWalletBalance() {
